@@ -1,0 +1,44 @@
+INFO [2023-03-15 10:48:29] [[1]]
+INFO [2023-03-15 10:48:29] venn_mt
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $filename
+INFO [2023-03-15 10:48:29] paste0(annot_path, "Venn_all-up-MT_", projectname, "_", format(Sys.time(), 
+INFO [2023-03-15 10:48:29]     "%Y%m%d_%H%M%S"), ".png")
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $main
+INFO [2023-03-15 10:48:29] [1] "Venn all up - microtubules"
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $category.names
+INFO [2023-03-15 10:48:29] c(DSK_SK = "DSK vs SK", DSK_K = "DSK vs K", DS_SK = "DS vs SK", 
+INFO [2023-03-15 10:48:29]     DS_K = "DS vs K")
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $print.mode
+INFO [2023-03-15 10:48:29] c("raw", "percent")
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $sigdigs
+INFO [2023-03-15 10:48:29] [1] 1
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $fill
+INFO [2023-03-15 10:48:29] c("#D43F3AFF", "#EFC000FF", "#5CB85CFF", "#9632B8FF")
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $fontfamily
+INFO [2023-03-15 10:48:29] [1] "sans"
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $main.fontfamily
+INFO [2023-03-15 10:48:29] [1] "sans"
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $main.fontface
+INFO [2023-03-15 10:48:29] [1] "bold"
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $cat.fontfamily
+INFO [2023-03-15 10:48:29] [1] "sans"
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $cat.fontface
+INFO [2023-03-15 10:48:29] [1] "bold"
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $cat.col
+INFO [2023-03-15 10:48:29] c("#D43F3AFF", "#EFC000FF", "#5CB85CFF", "#9632B8FF")
+INFO [2023-03-15 10:48:29] 
+INFO [2023-03-15 10:48:29] $imagetype
+INFO [2023-03-15 10:48:29] [1] "png"
+INFO [2023-03-15 10:48:29] 
