@@ -84,16 +84,14 @@ choose_file = function(caption = 'Select file') {
   }
 }
 
-# Set path of working directory
-setwd(choose_directory())
 
 # Set output paths for plots and tables
-QC_path <- "Output/QC_plots/"
+QC_path <- "P-Sites/Output/QC_plots/"
 
 # Select file
 psites <-
   read.table(
-    file = choose_file(),
+    file = "P-Sites/Data/txt_03_BioID-DCLK1_200408_Phospho (STY)Sites.txt",
     stringsAsFactors = FALSE,
     header = TRUE,
     quote = "",
@@ -817,13 +815,13 @@ count_tbl[nrow(count_tbl)+1,] <- c("enriched",
 ################################################################################
 
 ## Create output subfolder
-if (dir.exists("Biotin_enriched")) {
+if (dir.exists("P-Sites/Output/Biotin_enriched")) {
   
   cat("The folder already exists")
   
 } else {
   
-  dir.create("Biotin_enriched",
+  dir.create("P-Sites/Output/Biotin_enriched",
              recursive = TRUE)
   
 }
@@ -947,7 +945,7 @@ writeData(wbook, sheet = 5, DS_enr)
 writeData(wbook, sheet = 6, SK_enr)
 writeData(wbook, sheet = 7, K_enr)
 saveWorkbook(wbook,
-             paste0("Biotin_enriched/", "Biotin-enriched_results_",
+             paste0("P-Sites/Output/Biotin_enriched/", "Biotin-enriched_results_",
                     projectname,"_",format(Sys.time(), '%Y%m%d_%H%M%S'),
                     ".xlsx"),
              overwrite = TRUE)
@@ -963,19 +961,19 @@ library(DOSE) # load DOSE package for parsing results
 library(enrichplot) # needed for GO plots
 
 ## Create output subfolder
-if (dir.exists("Biotin_enriched/Annotation_enrichment")) {
+if (dir.exists("P-Sites/Output/Biotin_enriched/Annotation_enrichment")) {
   
   cat("The folder already exists")
   
 } else {
   
-  dir.create("Biotin_enriched/Annotation_enrichment",
+  dir.create("P-Sites/Output/Biotin_enriched/Annotation_enrichment",
              recursive = TRUE)
   
 }
 
 ## Set relative output path####
-Biotin_annot_path <- "Biotin_enriched/Annotation_enrichment/"
+Biotin_annot_path <- "P-Sites/Output/Biotin_enriched/Annotation_enrichment/"
 
 ## GO-terms####
 # Since we want to see what kind of proteins are interacting with the different
@@ -1208,7 +1206,9 @@ biotin_enr_ids <- psite_enr_table %>%
   filter(Site != "")
 
 ### day7 vs 0 - dimethyl dataset
-DML_7_0_all <- read.xlsx(xlsxFile = choose_file(), sheet = 4) 
+DML_7_0_all <- read.xlsx(xlsxFile = 
+                           "P-Sites/Data/Table_S3_Neurospheres_Phosphoproteome_processed_data.xlsx", 
+                         sheet = 4) 
 DML_7_0_reg <- DML_7_0_all %>% 
   dplyr::filter (Regulated == "+") %>%
   dplyr::select(c("Gene.names", "Amino.acid", "Position")) %>%
@@ -1226,7 +1226,9 @@ DML_7_0_reg <- DML_7_0_all %>%
   filter(Site != "")
 
 ### day14 vs 0 - dimethyl dataset
-DML_14_0_all <- read.xlsx(xlsxFile = choose_file(), sheet = 5) 
+DML_14_0_all <- read.xlsx(xlsxFile = 
+                            "P-Sites/Data/Table_S3_Neurospheres_Phosphoproteome_processed_data.xlsx", 
+                          sheet = 5) 
 DML_14_0_reg <- DML_14_0_all %>% 
   dplyr::filter (Regulated == "+") %>%
   dplyr::select(c("Gene.names", "Amino.acid", "Position")) %>%
@@ -1251,7 +1253,7 @@ venn_a <- list( all_BioID = biotin_enr_ids$Site,
 ## Calculate Venn overlaps & write to file
 venn_a_counts <- get.venn.partitions(venn_a)
 write.xlsx(x = venn_a_counts, 
-           file = paste0("Venn-table_BioID-Biotin-riched-vs-DML_",projectname,
+           file = paste0("P-Sites/Output/Venn_diagrams/Venn-table_BioID-Biotin-riched-vs-DML_",projectname,
                          "_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
 
 ## Plot Venn diagrams ####
@@ -1473,21 +1475,21 @@ design_MA <- data.frame(
   batch = c(rep(c(1:3),
                 times = 4))
 ) %>%
-  write_tsv(file = "Output/normalizerDE_eval/designNormalyzerDE2.tsv")
+  write_tsv(file = "P-Sites/Output/normalizerDE_eval/designNormalyzerDE2.tsv")
 
 # Generate input data & write to file.
-# Input data has to be de-logarithmized before
+# Input data has to be "de-logarithmized" before
 input_data <- 2 ^ dat_log_enriched  %>%
   mutate(ProtID = row.names(dat_log_enriched),
          .before = 1) %>%
-  write_tsv(file = "Output/normalizerDE_eval/inputNormalyzerDE.tsv")
+  write_tsv(file = "P-Sites/Output/normalizerDE_eval/inputNormalyzerDE.tsv")
 
 # Run normalyzerDE
 NormalyzerDE::normalyzer(
   jobName = "normalizerDE_eval",
-  designPath = "designNormalyzerDE.tsv",
-  dataPath = "inputNormalyzerDE.tsv",
-  outputDir = getwd()
+  designPath = "P-Sites/Output/normalizerDE_eval/designNormalyzerDE.tsv",
+  dataPath = "P-Sites/Output/normalizerDE_eval/inputNormalyzerDE.tsv",
+  outputDir = "P-Sites/Output/normalizerDE_eval/"
 )
 
 # Result: ==> basically every method is better then simple log2 or mean. But RLR,
@@ -2430,7 +2432,7 @@ fit3 <- eBayes(fit2, trend = TRUE)
 
 ## Save results to plots and tables####
 
-DE_path <- "Output/DE_analysis/" # Set path for output data
+DE_path <- "P-Sites/Output/DE_analysis/" # Set path for output data
 
 for (i in x) {
   limma_result <- topTable(fit3, coef = i, number = Inf)
@@ -2840,6 +2842,10 @@ saveWorkbook(wbook,
 
 
 # Dclk1 detailed psite analysis ####----------------------------------------
+
+## Set relative output path####
+Dclk1_psites_path <- "P-Sites/Output/Dclk1_psite_analysis/"
+
 ## Filter for Dclk1 psites #####
 Dclk1_sites <- psite_norm_table %>% 
   filter(grepl("Q9JLM8",Leading.proteins))
@@ -2949,7 +2955,7 @@ plotheat <- pheatmap(
 )
 
 png(
-  filename = paste0(QC_path,
+  filename = paste0(Dclk1_psites_path,
                     "Dclk1_Sitemap_",
                     "enriched_norm_log2_intensities_L_z-scaled",
                     "_10x8in_",
@@ -2967,7 +2973,7 @@ plotheat
 dev.off()
 
  svg(
-  filename = paste0(QC_path,
+  filename = paste0(Dclk1_psites_path,
                     "Dclk1_Sitemap_",
                     "enriched_norm_log2_intensities_z-scaled",
                     "_8x6in_",
@@ -3001,7 +3007,7 @@ plotheat <- pheatmap(
 )
 
 png(
-  filename = paste0(QC_path,
+  filename = paste0(Dclk1_psites_path,
                     "Dclk1_Sitemap_",
                     "enriched_norm_log2_intensities_L_z-scaled_woDS",
                     "_12x5in_",
@@ -3019,7 +3025,7 @@ plotheat
 dev.off()
 
 svg(
-  filename = paste0(QC_path,
+  filename = paste0(Dclk1_psites_path,
                     "Dclk1_Sitemap_",
                     "enriched_norm_log2_intensities_z-scaled_woDS",
                     "_8x6in_",
@@ -3408,7 +3414,7 @@ dev.off()
 
 
 # Write site id count table to Excel ####
-wbook <- createWorkbook("P-sites_ID-Count_table")
+wbook <- createWorkbook("P-Sites/Output/P-sites_ID-Count_table")
 addWorksheet(wbook, "ID-counts")
 writeData(wbook, sheet = 1, count_tbl)
 saveWorkbook(wbook,
@@ -3420,7 +3426,7 @@ saveWorkbook(wbook,
 
 ###########################################################################
 # Annotation-enrichment analysis###########################################
-# Perform GO-overrepresentation and GSEA analyses with the clusterProfiler 
+# Perform GO- and KEGG overrepresentation with the clusterProfiler 
 # package
 ###########################################################################
 
@@ -3431,19 +3437,19 @@ library(DOSE) # load DOSE package for parsing results
 library(enrichplot) # needed for GO plots
 
 ## Create output subfolder
-if (dir.exists("Output/DE_analysis/Annotation_enrichment")) {
+if (dir.exists("P-Sites/Output/DE_analysis/Annotation_enrichment")) {
   
   cat("The folder already exists")
   
 } else {
   
-  dir.create("Output/DE_analysis/Annotation_enrichment",
+  dir.create("P-Sites/Output/DE_analysis/Annotation_enrichment",
              recursive = TRUE)
   
 }
 
 ## Set relative output path####
-DE_annot_path <- "Output/DE_analysis/Annotation_enrichment/"
+DE_annot_path <- "P-Sites/Output/DE_analysis/Annotation_enrichment/"
 
 ## Optional - Load previous results ####
 # If the upper part of the script, e.g. the DE enrichment analysis,
@@ -4044,8 +4050,8 @@ venn_b <- list( SK_DSK_up = SK_DSK_up$SiteID,
 ## Calculate Venn overlaps & write to file
 venn_b_counts <- get.venn.partitions(venn_b)
 write.xlsx(x = venn_b_counts, 
-           file = paste0("Venn-table_BioID-SK-DSKup-vs-DML-up_",projectname,
-                         "_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
+           file = paste0("P-Sites/Output/Venn_diagrams/Venn-table_BioID-SK-DSKup-vs-DML-up_",
+                         projectname,"_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
 
 ## Plot Venn diagrams ####
 venn.diagram(venn_b,
@@ -4075,7 +4081,7 @@ venn.diagram(venn_b,
 ################################################################################
 
 #Save session_info to file for traceabillity & transparency reasons####
-devtools::session_info(to_file = paste0("Session_info_",
+devtools::session_info(to_file = paste0("P-Sites/Session_info_",
                                         projectname, "_", 
                                         format(Sys.time(),'%Y%m%d_%H%M%S'),
                                         ".txt"))
