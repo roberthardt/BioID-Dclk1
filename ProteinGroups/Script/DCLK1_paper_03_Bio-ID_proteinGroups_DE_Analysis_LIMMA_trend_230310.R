@@ -85,16 +85,14 @@ choose_file = function(caption = 'Select file') {
   }
 }
 
-# Set path of working directory
-setwd(choose_directory())
 
 # Set output paths for plots and tables
-QC_path <- "QC_plots/"
+QC_path <- "ProteinGroups/Output/QC_plots/"
 
 # Select file
 protein <-
   read.table(
-    file = choose_file(),
+    file = "ProteinGroups/Data/txt_03_BioID-DCLK1_200408_proteinGroups.txt",
     stringsAsFactors = FALSE,
     header = TRUE,
     quote = "",
@@ -801,13 +799,13 @@ count_tbl[nrow(count_tbl)+1,] <- c("enriched",
 ################################################################################
 
 ## Create output subfolder
-if (dir.exists("Biotin_enriched")) {
+if (dir.exists("ProteinGroups/Output/Biotin_enriched")) {
   
   cat("The folder already exists")
   
 } else {
   
-  dir.create("Biotin_enriched",
+  dir.create("ProteinGroups/Output/Biotin_enriched",
              recursive = TRUE)
 }
 
@@ -939,7 +937,7 @@ writeData(wbook, sheet = 5, DS_enr)
 writeData(wbook, sheet = 6, SK_enr)
 writeData(wbook, sheet = 7, K_enr)
 saveWorkbook(wbook,
-             paste0("Biotin_enriched/", "Biotin-enriched_results_",
+             paste0("ProteinGroups/Output/Biotin_enriched/", "Biotin-enriched_results_",
                     projectname,"_",format(Sys.time(), '%Y%m%d_%H%M%S'),
                     ".xlsx"),
              overwrite = TRUE)
@@ -955,19 +953,19 @@ library(DOSE) # load DOSE package for parsing results
 library(enrichplot) # needed for GO plots
 
 ## Create output subfolder
-if (dir.exists("Biotin_enriched/Annotation_enrichment")) {
+if (dir.exists("ProteinGroups/Output/Biotin_enriched/Annotation_enrichment")) {
   
   cat("The folder already exists")
   
 } else {
   
-  dir.create("Biotin_enriched/Annotation_enrichment",
+  dir.create("ProteinGroups/Output/Biotin_enriched/Annotation_enrichment",
              recursive = TRUE)
   
 }
 
 ## Set relative output path####
-Biotin_annot_path <- "Biotin_enriched/Annotation_enrichment/"
+Biotin_annot_path <- "ProteinGroups/Output/Biotin_enriched/Annotation_enrichment/"
 
 ## GO-terms####
 # Since we want to see what kind of proteins are interacting with the different
@@ -1375,20 +1373,20 @@ design_MA <- data.frame(
   batch = c(rep(c(1:3),
                 times = 4))
 ) %>%
-  write_tsv(file = "designNormalyzerDE.tsv")
+  write_tsv(file = "ProteinGroups/Output/normalizerDE_eval/designNormalyzerDE.tsv")
 
 # Generate input data & write to file.
 # Input data has to be de-logarithmized before
 input_data <- 2 ^ dat_log_enriched  %>%
   mutate(ProtID = row.names(dat_log_enriched),
          .before = 1) %>%
-  write_tsv(file = "inputNormalyzerDE.tsv")
+  write_tsv(file = "ProteinGroups/Output/normalizerDE_eval/inputNormalyzerDE.tsv")
 
 # Run normalyzerDE
 NormalyzerDE::normalyzer(
   jobName = "normalizerDE_eval",
-  designPath = "designNormalyzerDE.tsv",
-  dataPath = "inputNormalyzerDE.tsv",
+  designPath = "ProteinGroups/Output/normalizerDE_eval/designNormalyzerDE.tsv",
+  dataPath = "ProteinGroups/Output/normalizerDE_eval/inputNormalyzerDE.tsv",
   outputDir = getwd()
 )
 
@@ -2198,7 +2196,7 @@ fit3 <- eBayes(fit2, trend = TRUE)
 
 ## Save results to plots and tables####
 
-DE_path <- "DE_analysis/" # Set path for output data
+DE_path <- "ProteinGroups/Output/DE_analysis/" # Set path for output data
 
 for (i in x) {
   limma_result <- topTable(fit3, coef = i, number = Inf)
@@ -2723,18 +2721,18 @@ library(DOSE) # load DOSE package for parsing results
 library(enrichplot) # needed for GO plots
 
 ## Create output subfolder
-if (dir.exists("DE_analysis/Annotation_enrichment")) {
+if (dir.exists("ProteinGroups/Output/DE_analysis/Annotation_enrichment")) {
   
   cat("The folder already exists")
   
 } else {
   
-  dir.create("DE_analysis/Annotation_enrichment")
+  dir.create("ProteinGroups/Output/DE_analysis/Annotation_enrichment")
   
 }
 
 ## Set relative output path####
-annot_path <- "DE_analysis/Annotation_enrichment/"
+annot_path <- "ProteinGroups/Output/DE_analysis/Annotation_enrichment/"
 
 ## Optional - Load previous results ####
 # If the upper part of the script, e.g. the DE enrichment analysis,
@@ -3397,13 +3395,13 @@ venn_nu <- list( SK_DSK = DSK_SK_down_ids$Gene.names,
 ## Calculate Venn overlaps & write to file
 venn_mt_counts <- get.venn.partitions(venn_mt)
 write.xlsx(x = venn_mt_counts, 
-           file = paste0("Venn-table_all-up_MT_",projectname,
-                         "_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
+           file = paste0("ProteinGroups/Output/DE_analysis/Venn_comparisons/Venn-table_all-up_MT_",
+                         projectname,"_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
 
 venn_nu_counts <- get.venn.partitions(venn_nu)
 write.xlsx(x = venn_nu_counts, 
-           file = paste0("Venn-table_all-up_NUC_",projectname,
-                         "_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
+           file = paste0("ProteinGroups/Output/DE_analysis/Venn_comparisons/Venn-table_all-up_NUC_",
+                         projectname,"_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
 
 ## Plot Venn diagrams ####
 venn.diagram(venn_mt,
@@ -3451,7 +3449,7 @@ venn.diagram(venn_nu,
 ################################################################################
 
 #Save session_info to file for traceabillity & transparency reasons####
-devtools::session_info(to_file = paste0("Session_info_",
+devtools::session_info(to_file = paste0("ProteinGroups/Output/Session_info_",
                                         projectname, "_", 
                                         format(Sys.time(),'%Y%m%d_%H%M%S'),
                                         ".txt"))
