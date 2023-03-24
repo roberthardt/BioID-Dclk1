@@ -3992,14 +3992,57 @@ for (i in x) {
 }
 
 ################################################################################
-# Venn of SK vs DSK up compared to Dimethyl up ##################################
+# Venn of regulated psites in DSK-SK + DSK-K vs Dimethyl data ###########
 ################################################################################
-# We want to compare the phosphosites upregulated in SK vs DSK against the ones 
-# regulated in the dimethyl dataset day7/0 and/or day 14/0.
+# We want to do two comparisons:
+# 1. DSK_SK up + DSK_K up (=microtubule-localized) vs. dimethyl up (day7/0 + 14/0) 
+# 2. DSK_SK down + DSK_K down (=cytosol/nucleus localized) vs. dimethyl down (day7/0 + 14/0) 
 
 ## Extract siteIDs for each regulation ####
-### Create vector of SK_DSK upregulated sites ####
-SK_DSK_up <- candidates_DSK_SK %>%
+### Create vector of DSK vs SK upregulated sites ####
+DSK_SK_up <- candidates_DSK_SK %>%
+  dplyr::filter (logFC > 0.58) %>%
+  unite(col = Site, 
+        c(Gene.names, Amino.acid), 
+        remove = T) %>% unite(col = Site,
+                              c(Site,Position),
+                              sep = "",
+                              remove = T) %>%
+  dplyr::select(c("Site")) %>% 
+  separate_wider_delim(cols = everything(), 
+                       delim = ";",
+                       names = c("SiteID"),
+                       too_many = "drop") %>% 
+  filter(SiteID != "")
+
+### Create vector of DSK vs K upregulated sites ####
+DSK_K_up <- candidates_DSK_K %>%
+  dplyr::filter (logFC > 0.58) %>%
+  unite(col = Site, 
+        c(Gene.names, Amino.acid), 
+        remove = T) %>% unite(col = Site,
+                              c(Site,Position),
+                              sep = "",
+                              remove = T) %>%
+  dplyr::select(c("Site")) %>% 
+  separate_wider_delim(cols = everything(), 
+                       delim = ";",
+                       names = c("SiteID"),
+                       too_many = "drop") %>% 
+  filter(SiteID != "")
+
+### Merge DSK_SK and DSK_K up ####
+microtubule_up <- rbind(DSK_SK_up, DSK_K_up) %>%
+  distinct() %>%
+  separate_wider_delim(cols = everything(), 
+                       delim = ";",
+                       names = c("Site"),
+                       too_many = "drop") %>% 
+  filter(Site != "")
+
+
+### Create vector of DSK vs SK downregulated sites ####
+DSK_SK_down <- candidates_DSK_SK %>%
   dplyr::filter (logFC < -0.58) %>%
   unite(col = Site, 
         c(Gene.names, Amino.acid), 
@@ -4013,6 +4056,32 @@ SK_DSK_up <- candidates_DSK_SK %>%
                        names = c("SiteID"),
                        too_many = "drop") %>% 
   filter(SiteID != "")
+
+### Create vector of DSK vs K downregulated sites ####
+DSK_K_down <- candidates_DSK_K %>%
+  dplyr::filter (logFC < -0.58) %>%
+  unite(col = Site, 
+        c(Gene.names, Amino.acid), 
+        remove = T) %>% unite(col = Site,
+                              c(Site,Position),
+                              sep = "",
+                              remove = T) %>%
+  dplyr::select(c("Site")) %>% 
+  separate_wider_delim(cols = everything(), 
+                       delim = ";",
+                       names = c("SiteID"),
+                       too_many = "drop") %>% 
+  filter(SiteID != "")
+
+### Merge DSK_SK and DSK_K down ####
+cytonuc_up <- rbind(DSK_SK_down, DSK_K_down) %>%
+  distinct() %>%
+  separate_wider_delim(cols = everything(), 
+                       delim = ";",
+                       names = c("Site"),
+                       too_many = "drop") %>% 
+  filter(Site != "")
+
 
 ### dimethyl up = psites upregulated in day7/0 and/or day14/0 ####
 DML_7_0_up <- DML_7_0_all %>% 
@@ -4043,30 +4112,67 @@ DML_up <- rbind(DML_7_0_up,DML_14_0_up) %>%
                        too_many = "drop") %>% 
   filter(Site != "")
 
+### dimethyl down = psites downregulated in day7/0 and/or day14/0 ####
+DML_7_0_down <- DML_7_0_all %>% 
+  dplyr::filter (`2Xdown` == "+") %>%
+  dplyr::select(c("Gene.names", "Amino.acid", "Position")) %>%
+  unite(col = Site, 
+        c(Gene.names, Amino.acid), 
+        remove = T) %>% unite(col = Site,
+                              c(Site,Position),
+                              sep = "",
+                              remove = T) 
+
+DML_14_0_down <- DML_14_0_all %>% 
+  dplyr::filter (`2Xdown` == "+") %>%
+  dplyr::select(c("Gene.names", "Amino.acid", "Position")) %>%
+  unite(col = Site, 
+        c(Gene.names, Amino.acid), 
+        remove = T) %>% unite(col = Site,
+                              c(Site,Position),
+                              sep = "",
+                              remove = T) 
+
+DML_down <- rbind(DML_7_0_down,DML_14_0_down) %>%
+  distinct() %>%
+  separate_wider_delim(cols = everything(), 
+                       delim = ";",
+                       names = c("Site"),
+                       too_many = "drop") %>% 
+  filter(Site != "")
+
 ## Create lists for each Venn to be ploted ####
-venn_b <- list( SK_DSK_up = SK_DSK_up$SiteID,
-                DML_up = DML_up$Site)
+venn_a <- list(microtubule_up = microtubule_up$Site,
+               DML_up = DML_up$Site)
+
+venn_b <- list(cytonuc_up = cytonuc_up$Site,
+               DML_down = DML_down$Site)
 
 ## Calculate Venn overlaps & write to file
+venn_a_counts <- get.venn.partitions(venn_a)
+write.xlsx(x = venn_a_counts, 
+           file = paste0("P-Sites/Output/Venn_diagrams/Venn-table_microtubules-up_vs_DML-up_",
+                         projectname,"_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
+
 venn_b_counts <- get.venn.partitions(venn_b)
 write.xlsx(x = venn_b_counts, 
-           file = paste0("P-Sites/Output/Venn_diagrams/Venn-table_BioID-SK-DSKup-vs-DML-up_",
+           file = paste0("P-Sites/Output/Venn_diagrams/Venn-table_cytosol-nucleus-up_vs_DML-down_",
                          projectname,"_",format(Sys.time(), '%Y%m%d_%H%M%S'),".xlsx"))
 
 ## Plot Venn diagrams ####
-venn.diagram(venn_b,
-             filename = paste0("Venn_BioID-SK-DSKup-vs-DML-up_",
+venn.diagram(venn_a,
+             filename = paste0("P-Sites/Output/Venn_diagrams/Venn_microtubules-up_vs_DML-up_",
                                projectname, "_",format(Sys.time(), 
                                                        '%Y%m%d_%H%M%S'),".png"),
-             category.names = c(SK_DSK_up = "SK vs. DSK up",
+             category.names = c(microtubule_up = "microtubules up",
                                 DML_up = "dimethyl up"),
              print.mode = c("raw", "percent"),
              sigdigs = 1,
-             fill = c("#EFC000FF", "#9632B8FF"),
+             fill = c("#EFC000FF", "#5CB85CFF"),
              fontfamily = "sans",
              cat.fontfamily = "sans",
              cat.fontface = "bold",
-             cat.col = c("#EFC000FF", "#9632B8FF"),
+             cat.col = c("#EFC000FF", "#5CB85CFF"),
              cat.cex = 1.4,
              imagetype = "png",
              cat.just = list(a = c(-0.5, -4),
@@ -4075,7 +4181,26 @@ venn.diagram(venn_b,
              euler = F,
              scale = F)
 
-
+venn.diagram(venn_b,
+             filename = paste0("P-Sites/Output/Venn_diagrams/Venn_cytosol-nucleus-down_vs_DML-down__",
+                               projectname, "_",format(Sys.time(), 
+                                                       '%Y%m%d_%H%M%S'),".png"),
+             category.names = c(cytonuc_up = "cytosol/nucleus up",
+                                DML_down = "dimethyl down"),
+             print.mode = c("raw", "percent"),
+             sigdigs = 1,
+             fill = c("#D43F3AFF", "#9632B8FF"),
+             fontfamily = "sans",
+             cat.fontfamily = "sans",
+             cat.fontface = "bold",
+             cat.col = c("#D43F3AFF", "#9632B8FF"),
+             cat.cex = 1.4,
+             imagetype = "png",
+             cat.just = list(a = c(-0.5, -4),
+                             b = c(1.7, -4)),
+             margin = 0.1,
+             euler = F,
+             scale = F)
 ################################################################################
 # Write session info to file ###################################################
 ################################################################################
